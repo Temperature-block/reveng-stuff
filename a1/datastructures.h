@@ -11,7 +11,7 @@ struct function{
 public:
   std::string name;
   /*should there be tag list? from the looks of assignment 2? to do later */
-  std::vector<struct basic_block*> bb;
+  std::vector<struct basic_block*> entryblocks;
 
   void insert_bb(struct basic_block* block){
        bb.push_back(block);

@@ -9,8 +9,6 @@ struct module* make_module(string name){
 struct function* make_function(string name){
        struct function newfunc = new struct func;
        module->name = name;
-       struct basic_block *bb =make_bb("entry")
-       newfunc->insert_bb(bb);
        return newmodule
 }
 
