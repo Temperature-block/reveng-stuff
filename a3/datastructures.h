@@ -4,6 +4,7 @@
 #include <string>
 #include <stdexcept>
 #include <iostream>
+#include <algorithm>
 
 struct tag{
  std::string name;
@@ -27,7 +28,6 @@ public:
      }
      return 1;
  }
-
  void add_sucessor(struct basic_block* bb,std::string tagname){
       if(!check_uniq(tagname)){
          throw std::runtime_error("Tag name needs to be unique because each tag connect between two blocks a singular pathway");
@@ -37,6 +37,7 @@ public:
       tagsmember->block = bb;
       successors.push_back(tagsmember);
  }
+
  void remove_sucessor(std::string tagname){
      int iter = 0;
      for(struct tag* tagn:successors){
@@ -82,7 +83,7 @@ public:
            return;
            /* should we return copy */
          }
-      ++iter;
+       ++iter;
        }
   }
 
@@ -95,6 +96,42 @@ public:
      }
    }
   }
+
+ std::vector<int> traverse_bb(std::vector<int> vecc,struct basic_block* block){
+    int iter=0,iter2=0;
+       /* should make a template function for this loop */
+    for(struct basic_block* blockit:bb){
+           vecc[iter] = 1;
+           break;
+         ++iter;
+      }
+    iter = 0;
+
+   for(struct tag* stag:block->successors){
+      struct basic_block* succ_block = stag->block;
+      int* it = std::find(bb.begin(), bb.end(), succ_block);
+      if (it != bb.end()) {
+        int position = std::distance(bb.begin(), it);
+        if(vecc[position] != 1){
+          vecc = verify_reachability(vecc,succ_block);
+        }
+      }
+    }
+    return vecc;
+ }
+
+ void verify(){
+    if(entry == NULL){
+      throw std::runtime_error("Every basic block must have one entry atleast");
+    }
+    std::vector<int> vecc(bb.size(), 0);
+    vecc = traverse_bb(vecc,entry)
+    int* it = std::find(vecc.begin(), vecc.end(), 0);
+    if (it != vecc.end())
+    {
+      throw std::runtime_error("Every basic block in a function must be reachable via entry block");
+    }
+ }
   ~function(){
    for(struct basic_block* blockit:bb){
     delete blockit;
@@ -115,17 +152,14 @@ public:
   /* we assume each function has a unique name we are yet to add logic to handle unique name checking */
   void remove_by_name(std::string name){
        int iter = 0;
-       for(struct function* funcit:funcs){
-         ++iter;
+       for(struct function *funcit:funcs){
          if(funcit->name == name){
            funcs.erase(funcs.begin()+iter);
-           return;
            /* should we return copy */
          }
-      ++iter;
+         ++iter;
        }
   }
-
  ~module(){
    for(struct function* funcit:funcs){
    delete funcit;
@@ -138,4 +172,6 @@ struct module* make_module(std::string name);
 struct function* make_function(std::string name);
 struct basic_block* make_bb(std::string name);
 
+
 #endif
+

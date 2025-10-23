@@ -1,4 +1,8 @@
+#ifndef __dtst__
+#define __dtst__
 #include <vector>
+#include <string>
+#include <stdexcept>
 
 struct basic_block {
 public:
@@ -11,21 +15,35 @@ struct function{
 public:
   std::string name;
   /*should there be tag list? from the looks of assignment 2? to do later */
-  std::vector<struct basic_block*> entryblocks;
-
-  void insert_bb(struct basic_block* block){
+  std::vector<struct basic_block*> bb;
+  struct basic_block* entry = NULL;
+  void insert_bb(struct basic_block* block,int mark_entry){
+       if(mark_entry){
+          if(entry){
+            throw std::runtime_error("There must only be one entry block");
+          }
+          else{
+            entry = block;
+          }
+       }
        bb.push_back(block);
   }
 
-  void remove_by_name(string name){
+  void remove_by_name(std::string name){
        int iter = 0;
        for(struct basic_block* blockit:bb){
-         ++iter;
          if(blockit->name == name){
-           funcs.erase(iter);
+           bb.erase(bb.begin()+iter);
+           return;
            /* should we return copy */
          }
+      ++iter;
        }
+  }
+  ~function(){
+   for(struct basic_block* blockit:bb){
+    delete blockit;
+   }
   }
 };
 
@@ -35,24 +53,33 @@ public:
   std::string name;
   std::vector<struct function*> funcs;
 
-  void insert_func(struct func* function){
-       funcs.push_back(function);
+  void insert_func(struct function* func){
+       funcs.push_back(func);
        }
 
   /* we assume each function has a unique name we are yet to add logic to handle unique name checking */
-  void remove_by_name(string name){
+  void remove_by_name(std::string name){
        int iter = 0;
-       for(struct function funcit:funcs){
-         ++iter;
-         if(funcit.name == name){
-           funcs.erase(iter);
+       for(struct function* funcit:funcs){
+         if(funcit->name == name){
+           funcs.erase(funcs.begin()+iter);
+           return;
            /* should we return copy */
          }
+      ++iter;
        }
+  }
+
+ ~module(){
+   for(struct function* funcit:funcs){
+   delete funcit;
+   }
   }
 };
 
 
-struct module* make_module(string name);
-struct function* make_function(string name);
-struct basic_block* make_bb(string name);
+struct module* make_module(std::string name);
+struct function* make_function(std::string name);
+struct basic_block* make_bb(std::string name);
+
+#endif
