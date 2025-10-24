@@ -4,10 +4,12 @@
 #include <string>
 #include <stdexcept>
 #include <iostream>
+#include <algorithm>
 
 struct tag{
  std::string name;
  struct basic_block* block;
+
 };
 
 struct basic_block {
@@ -35,18 +37,23 @@ public:
       struct tag *tagsmember = new struct tag;
       tagsmember->name = tagname;
       tagsmember->block = bb;
+      sucnames.push_back(tagname);
       successors.push_back(tagsmember);
  }
- void remove_sucessor(std::string tagname){
-     int iter = 0;
-     for(struct tag* tagn:successors){
-      if(tagn->name == tagname){
-         successors.erase(successors.begin()+iter);
-         return;
-         }
-      ++iter;
-     }
- }
+void remove_sucessor(const std::string tagname) {
+    for (size_t iter = 0; iter < successors.size(); ++iter) {
+        std::cout<<successors[iter]->name<<"\n";
+        if (successors[iter]->name == tagname) {
+            delete successors[iter];
+            successors.erase(successors.begin() + iter);
+            sucnames.erase(
+                std::remove(sucnames.begin(), sucnames.end(), tagname),
+                sucnames.end()
+            );
+            return;
+        }
+    }
+}
   ~basic_block(){
    for(struct tag* tagn:successors){
     delete tagn;
@@ -87,13 +94,15 @@ public:
   }
 
   void visualize(){
-  std::cout<<"digraph "<<name<<"\n";
+  std::cout<<"digraph "<<name<<"{\n";
   for(struct basic_block* blockit:bb){
      std::string current = blockit->name;
+     std::cout<<current<<";\n";
      for(struct tag* tagn:blockit->successors){
-      std::cout<<current<<"->"<<tagn->block->name<<"[label="<<"\""<<tagn->name<<"\""<<";\n";
+      std::cout<<current<<"->"<<tagn->block->name<<"[label="<<"\""<<tagn->name<<"\""<<"];\n";
      }
    }
+   std::cout<<"}\n";
   }
   ~function(){
    for(struct basic_block* blockit:bb){
@@ -116,7 +125,6 @@ public:
   void remove_by_name(std::string name){
        int iter = 0;
        for(struct function* funcit:funcs){
-         ++iter;
          if(funcit->name == name){
            funcs.erase(funcs.begin()+iter);
            return;

@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <algorithm>
+#include <iterator>
 
 struct tag{
  std::string name;
@@ -38,16 +39,16 @@ public:
       successors.push_back(tagsmember);
  }
 
- void remove_sucessor(std::string tagname){
-     int iter = 0;
-     for(struct tag* tagn:successors){
+void remove_sucessor(std::string tagname){
+    int iter = 0;
+    for(struct tag* tagn:successors){
       if(tagn->name == tagname){
-         successors.erase(successors.begin()+iter);
-         return;
-         }
-      ++iter;
-     }
- }
+          successors.erase(successors.begin()+iter);
+          return;
+          }
+       ++iter;
+      }
+  }
   ~basic_block(){
    for(struct tag* tagn:successors){
     delete tagn;
@@ -88,13 +89,14 @@ public:
   }
 
   void visualize(){
-  std::cout<<"digraph "<<name<<"\n";
+  std::cout<<"digraph "<<name<<"{\n";
   for(struct basic_block* blockit:bb){
      std::string current = blockit->name;
      for(struct tag* tagn:blockit->successors){
-      std::cout<<current<<"->"<<tagn->block->name<<"[label="<<"\""<<tagn->name<<"\""<<";\n";
+        std::cout<<current<<"->"<<tagn->block->name<<"[label="<<"\""<<tagn->name<<"\""<<"];\n";
      }
    }
+   std::cout<<"}\n";
   }
 
  std::vector<int> traverse_bb(std::vector<int> vecc,struct basic_block* block){
@@ -109,11 +111,11 @@ public:
 
    for(struct tag* stag:block->successors){
       struct basic_block* succ_block = stag->block;
-      int* it = std::find(bb.begin(), bb.end(), succ_block);
+      auto it = std::find(bb.begin(), bb.end(), succ_block);
       if (it != bb.end()) {
         int position = std::distance(bb.begin(), it);
         if(vecc[position] != 1){
-          vecc = verify_reachability(vecc,succ_block);
+          vecc = traverse_bb(vecc,succ_block);
         }
       }
     }
@@ -125,8 +127,8 @@ public:
       throw std::runtime_error("Every basic block must have one entry atleast");
     }
     std::vector<int> vecc(bb.size(), 0);
-    vecc = traverse_bb(vecc,entry)
-    int* it = std::find(vecc.begin(), vecc.end(), 0);
+    vecc = traverse_bb(vecc,entry);
+    auto it = std::find(vecc.begin(), vecc.end(), 0);
     if (it != vecc.end())
     {
       throw std::runtime_error("Every basic block in a function must be reachable via entry block");
@@ -144,6 +146,7 @@ struct module{
 public:
   std::string name;
   std::vector<struct function*> funcs;
+  std::vector<std::string> funcnames;
 
   void insert_func(struct function* func){
        funcs.push_back(func);

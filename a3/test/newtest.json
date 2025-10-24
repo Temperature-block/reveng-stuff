@@ -1,0 +1,17 @@
+{
+  "file.lang": {
+    "functions": [
+      {
+        "name": "function_name",
+        "basic_blocks": [
+          { "name": "bb",  "type": "entry" },
+          { "name": "bb2", "type": "normal" }
+        ],
+        "links": [
+          { "tag": "if_true",  "from": "bb", "to": "bb2" },
+          { "tag": "if_false", "from": "bb", "to": "bb2" }
+        ]
+      }
+    ]
+  }
+}

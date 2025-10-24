@@ -1,0 +1,15 @@
+
+#include "../datastructures.h"
+#include <iostream>
+#include "test.h"
+/*
+struct module* make_module(std::string name);
+struct function* make_function(std::string name);
+struct basic_block* make_bb(std::string name);
+*/
+
+int main() {{
+    {}
+    return 0;
+}}
+
