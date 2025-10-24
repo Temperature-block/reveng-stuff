@@ -8,42 +8,50 @@ struct basic_block* make_bb(std::string name);
 */
 
 int main() {
-    // Create a module
     module* mod = make_module("TestModule");
 
-    // Create a function and its basic blocks
+    // Create a function with 3 basic blocks
     function* func1 = make_function("Func1");
+
     basic_block* bb1 = make_bb("BB1");
     basic_block* bb2 = make_bb("BB2");
 
-    func1->insert_bb(bb1, 1); // mark entry
-    func1->insert_bb(bb2, 0);
+    // Safely insert blocks, catching runtime errors
+    try {
+        func1->insert_bb(bb1, 1); // entry
+        func1->insert_bb(bb2, 1);
+    } catch (const std::runtime_error& e) {
+        std::cerr << "xception while inserting basic block: " << e.what() << "\n";
+        func1->insert_bb(bb2, 0);
+    }
 
     mod->insert_func(func1);
 
-    // Another function
-    function* func2 = make_function("Func2");
-    basic_block* bb3 = make_bb("BB3");
-    basic_block* bb4 = make_bb("BB4");
-try {
-    func2->insert_bb(bb3, 1); // first entry block
-    func2->insert_bb(bb4, 1); // second entry -> throws
-} catch (const std::runtime_error& e) {
-    std::cerr << "Caught exception: " << e.what() << std::endl;
-    // Continue execution
-}
-    mod->insert_func(func2);
+    // Add successors — safely, to test tag uniqueness
+    try {
+        bb1->add_sucessor(bb2, "if_true");
+        bb1->add_sucessor(bb2, "if_true"); // duplicate tag, throws
+    } catch (const std::runtime_error& e) {
+        std::cerr << "xception while adding successor: " << e.what() << "\n";
+        bb1->add_sucessor(bb2, "if_false"); // duplicate tag, throws
+    }
 
+    // Print the module structure
+    print_module(mod);
 
-    print_module(mod);
-    // Remove a basic block by name
-    func1->remove_by_name("BB2");
-    print_module(mod);
-    // Remove a function by name
-    mod->remove_by_name("Func2");
-    print_module(mod);
-    // Cleanup
-    delete mod;
+    // Graphviz-style visualization output for the function
+    std::cout << "\n--- Graphviz Visualization ---\n";
+    func1->visualize();
+
+    
+
+    std::cout << "\nRemoving tag 'if_true' from BB1...\n";
+    bb1->remove_sucessor("if_true");
+
+    std::cout << "\nAfter removing a successor:\n";
+    func1->visualize();
+
+delete mod;
 
     return 0;
 }
